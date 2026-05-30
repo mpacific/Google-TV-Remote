@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Google TV Remote</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #0B0B0E;
+  --surface: #14141A;
+  --surface-2: #1C1C24;
+  --btn: #22222C;
+  --btn-h: #2A2A36;
+  --btn-a: #18181F;
+  --blue: #4285F4;
+  --red: #EA4335;
+  --green: #34A853;
+  --yellow: #FBBC04;
+  --t1: #E4E4F0;
+  --t2: #7878A0;
+  --t3: #38383E;
+  --brd: rgba(255,255,255,0.06);
+}
+
+html,body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--t1);
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 76px;
+  background:
+    radial-gradient(ellipse 60% 35% at 50% 0%, rgba(66,133,244,.12) 0%, transparent 100%),
+    var(--bg);
+}
+
+/* ══ HEADER ══════════════════════════════════════════════════════ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo-dots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  width: 18px;
+  height: 18px;
+}
+
+.logo-dot {
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+}
+
+.logo-dot:nth-child(1){background:#4285F4}
+.logo-dot:nth-child(2){background:#EA4335}
+.logo-dot:nth-child(3){background:#34A853}
+.logo-dot:nth-child(4){background:#FBBC04}
+
+.logo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t2);
+  letter-spacing: .3px;
+}
+
+.header-spacer { flex: 1 }
+
+.ws-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--t3);
+  transition: background .3s;
+}
+
+.ws-indicator.connecting { background: var(--yellow); animation: blink 1s infinite; }
+.ws-indicator.pairing    { background: var(--yellow); animation: blink 1s infinite; }
+.ws-indicator.connected  { background: var(--green); }
+.ws-indicator.error      { background: var(--red); }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ══ CONNECT PANEL ═══════════════════════════════════════════════ */
+.connect-panel {
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 20px;
+}
+
+.connect-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ip-input {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--brd);
+  border-radius: 10px;
+  color: var(--t1);
+  font: 14px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.ip-input:focus { border-color: rgba(66,133,244,.45); }
+.ip-input::placeholder { color: var(--t3); }
+
+.connect-btn {
+  background: var(--blue);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font: 600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  padding: 11px 20px;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  white-space: nowrap;
+}
+
+.connect-btn:hover  { background: #5a9bf5; }
+.connect-btn:active { transform: scale(.97); }
+.connect-btn:disabled { background: #1e2e4e; color: #3a4e7a; cursor: default; }
+
+.status-hint {
+  font-size: 11px;
+  color: var(--t3);
+  margin-top: 8px;
+  padding-left: 2px;
+  min-height: 16px;
+  transition: color .3s;
+}
+
+.status-hint.live { color: var(--t2); }
+
+/* ══ PIN PANEL ═══════════════════════════════════════════════════ */
+.pin-panel {
+  width: 100%;
+  max-width: 360px;
+  background: rgba(66,133,244,.07);
+  border: 1px solid rgba(66,133,244,.25);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.pin-panel.show { display: block; }
+
+.pin-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+
+.pin-hint {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.pin-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pin-input {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--brd);
+  border-radius: 10px;
+  color: var(--t1);
+  font: 22px/1 ui-monospace,'SF Mono',Menlo,monospace;
+  padding: 10px 14px;
+  letter-spacing: 8px;
+  text-align: center;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.pin-input:focus { border-color: rgba(66,133,244,.45); }
+
+.pin-btn {
+  background: var(--blue);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font: 600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+
+.pin-btn:hover  { background: #5a9bf5; }
+.pin-btn:active { transform: scale(.97); }
+
+/* ══ ERROR TOAST ═════════════════════════════════════════════════ */
+.toast {
+  width: 100%;
+  max-width: 360px;
+  background: rgba(234,67,53,.1);
+  border: 1px solid rgba(234,67,53,.3);
+  border-radius: 10px;
+  color: #ff7070;
+  font-size: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  display: none;
+  animation: fadeIn .2s;
+}
+
+.toast.show { display: block; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-4px) } to { opacity:1; transform:none } }
+
+/* ══ REMOTE BODY ═════════════════════════════════════════════════ */
+.remote {
+  width: 300px;
+  background: linear-gradient(175deg, #1e1e26 0%, #121218 100%);
+  border-radius: 40px;
+  border: 1px solid rgba(255,255,255,.055);
+  box-shadow:
+    0 50px 100px -20px rgba(0,0,0,.85),
+    0 30px 60px -30px rgba(0,0,0,.8),
+    0 0 0 .5px rgba(255,255,255,.04) inset,
+    0 1px 0 rgba(255,255,255,.07) inset;
+  padding: 32px 26px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  transition: opacity .3s;
+}
+
+.remote::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 40px;
+  pointer-events: none;
+  /* Subtle noise texture via inline SVG */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+  background-size: 180px;
+  opacity: .6;
+}
+
+.remote.off {
+  opacity: .38;
+  pointer-events: none;
+}
+
+/* ── Power ───────────────────────────────────────── */
+.power-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-power {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #1f1010;
+  color: #c03030;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background .15s, color .15s, transform .1s, box-shadow .15s;
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.55),
+    0 1px 0 rgba(255,255,255,.07) inset;
+}
+
+.btn-power svg {
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  transition: filter .15s;
+}
+
+.btn-power::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  transition: border-color .3s;
+}
+
+.btn-power.on {
+  background: #2e0e0e;
+  color: #f04040;
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.55),
+    0 0 22px rgba(234,67,53,.35),
+    0 1px 0 rgba(255,255,255,.07) inset;
+}
+
+.btn-power.on::after { border-color: rgba(234,67,53,.35); }
+.btn-power:hover      { background: #2a1212; color: #e84040; transform: scale(1.05); }
+.btn-power:active     { transform: scale(.94); box-shadow: 0 2px 8px rgba(0,0,0,.6), inset 0 2px 5px rgba(0,0,0,.4); }
+
+/* ── Rule ────────────────────────────────────────── */
+.rule {
+  width: 100%;
+  height: 1px;
+  background: var(--brd);
+  margin: -8px 0;
+}
+
+/* ── Base button ─────────────────────────────────── */
+.btn {
+  border: none;
+  background: var(--btn);
+  color: var(--t1);
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .1s, transform .08s, box-shadow .1s;
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.45),
+    0 1px 0 rgba(255,255,255,.065) inset;
+}
+
+.btn:hover  { background: var(--btn-h); }
+.btn:active {
+  transform: translateY(1px) scale(.96);
+  box-shadow: 0 1px 4px rgba(0,0,0,.5), inset 0 2px 5px rgba(0,0,0,.35);
+}
+
+/* ── Nav row ─────────────────────────────────────── */
+.nav-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-nav {
+  width: 72px;
+  height: 46px;
+  border-radius: 13px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-nav .ico { font-size: 17px; line-height: 1; }
+.btn-nav .lbl { font-size: 10px; color: var(--t2); font-weight: 500; letter-spacing: .3px; }
+
+/* ── D-pad ───────────────────────────────────────── */
+.dpad {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  flex-shrink: 0;
+}
+
+/* Cross-shape backing */
+.dpad::before,
+.dpad::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,.015);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.dpad::before { top: 56px; left: 0; width: 168px; height: 56px; }
+.dpad::after  { top: 0; left: 56px; width: 56px; height: 168px; }
+
+.dp {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  font-size: 17px;
+  z-index: 1;
+}
+
+.dp.up    { top:0;    left:56px; border-radius:14px 14px 4px 4px; }
+.dp.down  { bottom:0; left:56px; border-radius:4px 4px 14px 14px; }
+.dp.left  { top:56px; left:0;    border-radius:14px 4px 4px 14px; }
+.dp.right { top:56px; right:0;   border-radius:4px 14px 14px 4px; }
+.dp.ok {
+  top:56px; left:56px;
+  border-radius:50%;
+  background: var(--surface-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  color: var(--t2);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.45),
+    0 0 0 1px rgba(255,255,255,.06) inset;
+}
+
+.dp.ok:hover  { background: #222230; }
+.dp.ok:active { box-shadow: 0 1px 4px rgba(0,0,0,.5), inset 0 2px 5px rgba(0,0,0,.35); }
+
+/* ── Volume / Channel ────────────────────────────── */
+.vc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+
+.vc-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-vc {
+  width: 74px;
+  height: 40px;
+  border-radius: 11px;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.btn-vc .ico { font-size: 15px; line-height: 1; }
+.btn-vc .lbl { font-size: 9px; color: var(--t3); font-weight: 600; letter-spacing: .6px; text-transform: uppercase; }
+
+.btn-mute {
+  width: 48px;
+  height: 40px;
+  border-radius: 11px;
+  font-size: 17px;
+  color: var(--t2);
+}
+
+.vc-gap { width: 48px; flex-shrink: 0; }
+
+/* ── Media ───────────────────────────────────────── */
+.media-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-media {
+  width: 68px;
+  height: 46px;
+  border-radius: 13px;
+  font-size: 20px;
+}
+
+/* ── Numpad ──────────────────────────────────────── */
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  width: 100%;
+}
+
+.btn-num {
+  height: 42px;
+  border-radius: 11px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--t2);
+  letter-spacing: 0;
+}
+
+.btn-num:hover { color: var(--t1); }
+.btn-zero { grid-column: 2; }
+
+/* ══ STATUS BAR ══════════════════════════════════════════════════ */
+.statusbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 52px;
+  background: rgba(11,11,14,.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 20px;
+  gap: 12px;
+}
+
+.sb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sb-key {
+  font: 700 8px ui-monospace,'SF Mono',Menlo,monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+.sb-val {
+  font: 500 12px ui-monospace,'SF Mono',Menlo,monospace;
+  color: var(--t2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.sb-val.on { color: var(--green); }
+
+/* ══ APPS SECTION ════════════════════════════════════════════════ */
+.apps-section {
+  width: 100%;
+  max-width: 360px;
+  margin-top: 28px;
+}
+
+.apps-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.apps-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+.apps-load-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--brd);
+  border-radius: 8px;
+  color: var(--t2);
+  font: 500 12px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.apps-load-btn:hover  { background: var(--btn-h); color: var(--t1); }
+.apps-load-btn:active { transform: scale(.97); }
+.apps-load-btn:disabled { opacity: .4; cursor: default; }
+
+.apps-copy-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--brd);
+  border-radius: 8px;
+  color: var(--t3);
+  font: 500 11px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.apps-copy-btn.show { display: flex; }
+.apps-copy-btn:hover { color: var(--t1); border-color: rgba(255,255,255,.15); }
+.apps-copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+.apps-adb-note {
+  font-size: 11px;
+  color: var(--t3);
+  line-height: 1.5;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--brd);
+  display: none;
+}
+.apps-adb-note.show { display: block; }
+.apps-adb-note code {
+  font-family: ui-monospace,'SF Mono',Menlo,monospace;
+  color: var(--blue);
+  font-size: 10px;
+}
+
+.apps-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 0;
+  font-size: 12px;
+  color: var(--t3);
+  display: none;
+}
+.apps-state.show { display: flex; }
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--brd);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin .55s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg) } }
+
+.apps-error-msg {
+  font-size: 11px;
+  color: #ff7070;
+  background: rgba(234,67,53,.08);
+  border: 1px solid rgba(234,67,53,.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: none;
+  line-height: 1.55;
+}
+.apps-error-msg.show { display: block; }
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.app-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px 8px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .08s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.app-tile:hover  { background: var(--surface-2); border-color: var(--brd); }
+.app-tile:active { transform: scale(.93); }
+
+.app-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255,255,255,.92);
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  letter-spacing: -.5px;
+}
+
+.app-name {
+  font-size: 10px;
+  color: var(--t2);
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+  line-height: 1;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-dots">
+      <div class="logo-dot"></div>
+      <div class="logo-dot"></div>
+      <div class="logo-dot"></div>
+      <div class="logo-dot"></div>
+    </div>
+    <span class="logo-label">Google TV</span>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="ws-indicator" id="wsIndicator"></div>
+</div>
+
+<!-- Connect -->
+<div class="connect-panel">
+  <div class="connect-row">
+    <input class="ip-input" id="ipInput" type="text" placeholder="192.168.x.x" autocomplete="off" spellcheck="false">
+    <button class="connect-btn" id="connectBtn" onclick="handleConnect()">Connect</button>
+  </div>
+  <div class="status-hint" id="statusHint">Enter your TV's IP address to connect</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- PIN -->
+<div class="pin-panel" id="pinPanel">
+  <div class="pin-label">Pairing Required</div>
+  <div class="pin-hint">A PIN is displayed on your TV screen. Enter it below to complete pairing.</div>
+  <div class="pin-row">
+    <input class="pin-input" id="pinInput" type="text" inputmode="numeric" maxlength="6" placeholder="······">
+    <button class="pin-btn" onclick="sendPin()">Pair</button>
+  </div>
+</div>
+
+<!-- Remote -->
+<div class="remote off" id="remote">
+
+  <div class="power-wrap">
+    <button class="btn-power" id="powerBtn" onclick="sendPower()" title="Power">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+        <line x1="12" y1="2" x2="12" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- Nav -->
+  <div class="nav-row">
+    <button class="btn btn-nav" onclick="k('KEYCODE_BACK')">
+      <span class="ico">◄</span><span class="lbl">Back</span>
+    </button>
+    <button class="btn btn-nav" onclick="k('KEYCODE_HOME')">
+      <span class="ico">⌂</span><span class="lbl">Home</span>
+    </button>
+    <button class="btn btn-nav" onclick="k('KEYCODE_MENU')">
+      <span class="ico">☰</span><span class="lbl">Menu</span>
+    </button>
+  </div>
+
+  <!-- D-Pad -->
+  <div class="dpad">
+    <button class="btn dp up"    onclick="k('KEYCODE_DPAD_UP')">▲</button>
+    <button class="btn dp down"  onclick="k('KEYCODE_DPAD_DOWN')">▼</button>
+    <button class="btn dp left"  onclick="k('KEYCODE_DPAD_LEFT')">◀</button>
+    <button class="btn dp right" onclick="k('KEYCODE_DPAD_RIGHT')">▶</button>
+    <button class="btn dp ok"    onclick="k('KEYCODE_DPAD_CENTER')">OK</button>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- Volume / Channel -->
+  <div class="vc-section">
+    <div class="vc-row">
+      <button class="btn btn-vc" onclick="k('KEYCODE_VOLUME_UP')">
+        <span class="ico">🔊</span><span class="lbl">Vol +</span>
+      </button>
+      <button class="btn btn-mute" id="muteBtn" onclick="k('KEYCODE_VOLUME_MUTE')">🔔</button>
+      <button class="btn btn-vc" onclick="k('KEYCODE_CHANNEL_UP')">
+        <span class="ico">⬆</span><span class="lbl">Ch +</span>
+      </button>
+    </div>
+    <div class="vc-row">
+      <button class="btn btn-vc" onclick="k('KEYCODE_VOLUME_DOWN')">
+        <span class="ico">🔉</span><span class="lbl">Vol −</span>
+      </button>
+      <div class="vc-gap"></div>
+      <button class="btn btn-vc" onclick="k('KEYCODE_CHANNEL_DOWN')">
+        <span class="ico">⬇</span><span class="lbl">Ch −</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- Media -->
+  <div class="media-row">
+    <button class="btn btn-media" onclick="k('KEYCODE_MEDIA_REWIND')" title="Rewind">⏮</button>
+    <button class="btn btn-media" onclick="k('KEYCODE_MEDIA_PLAY_PAUSE')" title="Play / Pause">⏯</button>
+    <button class="btn btn-media" onclick="k('KEYCODE_MEDIA_FAST_FORWARD')" title="Fast Forward">⏭</button>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- Numpad -->
+  <div class="numpad">
+    <button class="btn btn-num" onclick="k('KEYCODE_1')">1</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_2')">2</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_3')">3</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_4')">4</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_5')">5</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_6')">6</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_7')">7</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_8')">8</button>
+    <button class="btn btn-num" onclick="k('KEYCODE_9')">9</button>
+    <button class="btn btn-num btn-zero" onclick="k('KEYCODE_0')">0</button>
+  </div>
+
+</div>
+
+<!-- Apps -->
+<div class="apps-section">
+  <div class="apps-header">
+    <span class="apps-title">Apps</span>
+    <div style="display:flex;gap:8px;align-items:center">
+    <button class="apps-copy-btn" id="appsCopyBtn" onclick="copyPackageList()" title="Copy package list to clipboard">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy list
+    </button>
+    <button class="apps-load-btn" id="appsLoadBtn" onclick="loadApps()" disabled>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-4"/>
+      </svg>
+      Load Apps
+    </button>
+    </div>
+  </div>
+
+  <div class="apps-adb-note" id="appsAdbNote">
+    Requires <strong>ADB over network</strong> enabled on your TV (Developer Options → ADB debugging). Also needs <code>adb</code> installed:
+    <code>brew install android-platform-tools</code>
+  </div>
+
+  <div class="apps-state" id="appsLoading">
+    <div class="spinner"></div>
+    <span>Discovering apps via ADB…</span>
+  </div>
+
+  <div class="apps-error-msg" id="appsErrorMsg"></div>
+
+  <div class="apps-grid" id="appsGrid"></div>
+</div>
+
+<!-- Status Bar -->
+<div class="statusbar">
+  <div class="sb-item">
+    <span class="sb-key">App</span>
+    <span class="sb-val" id="sbApp">—</span>
+  </div>
+  <div class="sb-item">
+    <span class="sb-key">Power</span>
+    <span class="sb-val" id="sbPwr">—</span>
+  </div>
+  <div class="sb-item">
+    <span class="sb-key">Volume</span>
+    <span class="sb-val" id="sbVol">—</span>
+  </div>
+</div>
+
+<script type="module">
+import {
+  appState, setIndicator, setHint, toast, setRemoteEnabled, updateSB,
+  handleConnect, onMsg, send, k, sendPower, sendPin,
+  esc, loadApps, copyPackageList, renderApps, init,
+} from './app.js';
+
+// Expose functions called by inline onclick attributes
+Object.assign(window, {
+  handleConnect, sendPower, sendPin, loadApps, copyPackageList,
+  k,
+});
+
+init();
+</script>
+</body>
+</html>
