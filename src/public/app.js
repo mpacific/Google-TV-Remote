@@ -2,10 +2,7 @@
 export const appState = {
   ws: null,
   powered: null,
-  vol: null,
-  muted: false,
   app: null,
-  installedApps: [],
 };
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
@@ -41,9 +38,6 @@ export function updateSB() {
   if (appState.powered === true)       { pe.textContent = 'ON';  pe.className = 'sb-val on'; }
   else if (appState.powered === false) { pe.textContent = 'OFF'; pe.className = 'sb-val'; }
   else                                 { pe.textContent = '—';   pe.className = 'sb-val'; }
-
-  document.getElementById('sbVol').textContent =
-    appState.vol != null ? (appState.muted ? `${appState.vol} ✕` : `${appState.vol}`) : '—';
 }
 
 // ── Connect ────────────────────────────────────────────────────────────────
@@ -108,19 +102,11 @@ export function onMsg(m) {
       setHint(`Connected · ${document.getElementById('ipInput').value.trim()}`, true);
       document.getElementById('pinPanel').classList.remove('show');
       document.getElementById('connectBtn').disabled = false;
-      document.getElementById('appsLoadBtn').disabled = false;
       break;
 
     case 'powered':
       appState.powered = m.value;
       document.getElementById('powerBtn').classList.toggle('on', !!m.value);
-      updateSB();
-      break;
-
-    case 'volume':
-      appState.vol   = m.value?.level ?? m.value;
-      appState.muted = m.value?.muted ?? false;
-      document.getElementById('muteBtn').textContent = appState.muted ? '🔇' : '🔔';
       updateSB();
       break;
 
@@ -142,30 +128,6 @@ export function onMsg(m) {
       setHint('Unpaired — reconnect to pair again');
       document.getElementById('connectBtn').disabled = false;
       break;
-
-    case 'appsLoading':
-      document.getElementById('appsLoading').classList.add('show');
-      document.getElementById('appsErrorMsg').classList.remove('show');
-      document.getElementById('appsLoadBtn').disabled = true;
-      break;
-
-    case 'apps':
-      document.getElementById('appsLoading').classList.remove('show');
-      document.getElementById('appsAdbNote').classList.remove('show');
-      document.getElementById('appsLoadBtn').disabled = false;
-      appState.installedApps = m.list;
-      renderApps(m.list);
-      document.getElementById('appsCopyBtn').classList.add('show');
-      break;
-
-    case 'appsError':
-      document.getElementById('appsLoading').classList.remove('show');
-      document.getElementById('appsLoadBtn').disabled = false;
-      document.getElementById('appsAdbNote').classList.add('show');
-      const errEl = document.getElementById('appsErrorMsg');
-      errEl.textContent = m.message;
-      errEl.classList.add('show');
-      break;
   }
 }
 
@@ -186,55 +148,8 @@ export function sendPin() {
   setHint('Verifying PIN…', true);
 }
 
-// ── Apps ───────────────────────────────────────────────────────────────────
-export function esc(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-export function loadApps() {
-  send({ type: 'getApps' });
-}
-
-export function copyPackageList() {
-  const text = appState.installedApps.map(a => `${a.package} -> ${a.name}`).join('\n');
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('appsCopyBtn');
-    btn.classList.add('copied');
-    btn.querySelector('svg').style.display = 'none';
-    btn.childNodes[btn.childNodes.length - 1].textContent = ' Copied!';
-    setTimeout(() => {
-      btn.classList.remove('copied');
-      btn.querySelector('svg').style.display = '';
-      btn.childNodes[btn.childNodes.length - 1].textContent = ' Copy list';
-    }, 2000);
-  });
-}
-
-export function renderApps(list) {
-  const grid = document.getElementById('appsGrid');
-  if (!list.length) {
-    grid.innerHTML = '<div style="font-size:12px;color:var(--t3);padding:12px 0">No apps found</div>';
-    return;
-  }
-  grid.innerHTML = list.map(app => `
-    <div class="app-tile" data-component="${esc(app.component)}" title="${esc(app.package)}">
-      <div class="app-icon" style="background:${esc(app.color)}">${esc(app.name.charAt(0))}</div>
-      <span class="app-name">${esc(app.name)}</span>
-    </div>
-  `).join('');
-}
-
 // ── Init (event listeners + localStorage restore) ─────────────────────────
 export function init() {
-  document.getElementById('appsGrid').addEventListener('click', e => {
-    const tile = e.target.closest('.app-tile');
-    if (tile?.dataset.component) send({ type: 'launchApp', component: tile.dataset.component });
-  });
-
   document.getElementById('ipInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') handleConnect();
   });

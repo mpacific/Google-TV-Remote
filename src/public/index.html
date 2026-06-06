@@ -430,42 +430,6 @@ body {
 .dp.ok:hover  { background: #222230; }
 .dp.ok:active { box-shadow: 0 1px 4px rgba(0,0,0,.5), inset 0 2px 5px rgba(0,0,0,.35); }
 
-/* ── Volume / Channel ────────────────────────────── */
-.vc-section {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  width: 100%;
-}
-
-.vc-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-}
-
-.btn-vc {
-  width: 74px;
-  height: 40px;
-  border-radius: 11px;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.btn-vc .ico { font-size: 15px; line-height: 1; }
-.btn-vc .lbl { font-size: 9px; color: var(--t3); font-weight: 600; letter-spacing: .6px; text-transform: uppercase; }
-
-.btn-mute {
-  width: 48px;
-  height: 40px;
-  border-radius: 11px;
-  font-size: 17px;
-  color: var(--t2);
-}
-
-.vc-gap { width: 48px; flex-shrink: 0; }
-
 /* ── Media ───────────────────────────────────────── */
 .media-row {
   display: flex;
@@ -479,26 +443,6 @@ body {
   border-radius: 13px;
   font-size: 20px;
 }
-
-/* ── Numpad ──────────────────────────────────────── */
-.numpad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-  width: 100%;
-}
-
-.btn-num {
-  height: 42px;
-  border-radius: 11px;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--t2);
-  letter-spacing: 0;
-}
-
-.btn-num:hover { color: var(--t1); }
-.btn-zero { grid-column: 2; }
 
 /* ══ STATUS BAR ══════════════════════════════════════════════════ */
 .statusbar {
@@ -541,167 +485,6 @@ body {
 }
 
 .sb-val.on { color: var(--green); }
-
-/* ══ APPS SECTION ════════════════════════════════════════════════ */
-.apps-section {
-  width: 100%;
-  max-width: 360px;
-  margin-top: 28px;
-}
-
-.apps-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.apps-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--t3);
-}
-
-.apps-load-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--surface-2);
-  border: 1px solid var(--brd);
-  border-radius: 8px;
-  color: var(--t2);
-  font: 500 12px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: background .15s, color .15s;
-}
-
-.apps-load-btn:hover  { background: var(--btn-h); color: var(--t1); }
-.apps-load-btn:active { transform: scale(.97); }
-.apps-load-btn:disabled { opacity: .4; cursor: default; }
-
-.apps-copy-btn {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: 1px solid var(--brd);
-  border-radius: 8px;
-  color: var(--t3);
-  font: 500 11px -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: color .15s, border-color .15s;
-}
-.apps-copy-btn.show { display: flex; }
-.apps-copy-btn:hover { color: var(--t1); border-color: rgba(255,255,255,.15); }
-.apps-copy-btn.copied { color: var(--green); border-color: var(--green); }
-
-.apps-adb-note {
-  font-size: 11px;
-  color: var(--t3);
-  line-height: 1.5;
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  background: var(--surface);
-  border-radius: 8px;
-  border: 1px solid var(--brd);
-  display: none;
-}
-.apps-adb-note.show { display: block; }
-.apps-adb-note code {
-  font-family: ui-monospace,'SF Mono',Menlo,monospace;
-  color: var(--blue);
-  font-size: 10px;
-}
-
-.apps-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 20px 0;
-  font-size: 12px;
-  color: var(--t3);
-  display: none;
-}
-.apps-state.show { display: flex; }
-
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--brd);
-  border-top-color: var(--blue);
-  border-radius: 50%;
-  animation: spin .55s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin { to { transform: rotate(360deg) } }
-
-.apps-error-msg {
-  font-size: 11px;
-  color: #ff7070;
-  background: rgba(234,67,53,.08);
-  border: 1px solid rgba(234,67,53,.2);
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: none;
-  line-height: 1.55;
-}
-.apps-error-msg.show { display: block; }
-
-.apps-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.app-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 4px 8px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background .12s, border-color .12s, transform .08s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.app-tile:hover  { background: var(--surface-2); border-color: var(--brd); }
-.app-tile:active { transform: scale(.93); }
-
-.app-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 700;
-  color: rgba(255,255,255,.92);
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(0,0,0,.35);
-  letter-spacing: -.5px;
-}
-
-.app-name {
-  font-size: 10px;
-  color: var(--t2);
-  text-align: center;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 2px;
-  line-height: 1;
-}
 </style>
 </head>
 <body>
@@ -780,30 +563,6 @@ body {
 
   <div class="rule"></div>
 
-  <!-- Volume / Channel -->
-  <div class="vc-section">
-    <div class="vc-row">
-      <button class="btn btn-vc" onclick="k('KEYCODE_VOLUME_UP')">
-        <span class="ico">🔊</span><span class="lbl">Vol +</span>
-      </button>
-      <button class="btn btn-mute" id="muteBtn" onclick="k('KEYCODE_VOLUME_MUTE')">🔔</button>
-      <button class="btn btn-vc" onclick="k('KEYCODE_CHANNEL_UP')">
-        <span class="ico">⬆</span><span class="lbl">Ch +</span>
-      </button>
-    </div>
-    <div class="vc-row">
-      <button class="btn btn-vc" onclick="k('KEYCODE_VOLUME_DOWN')">
-        <span class="ico">🔉</span><span class="lbl">Vol −</span>
-      </button>
-      <div class="vc-gap"></div>
-      <button class="btn btn-vc" onclick="k('KEYCODE_CHANNEL_DOWN')">
-        <span class="ico">⬇</span><span class="lbl">Ch −</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="rule"></div>
-
   <!-- Media -->
   <div class="media-row">
     <button class="btn btn-media" onclick="k('KEYCODE_MEDIA_REWIND')" title="Rewind">⏮</button>
@@ -811,55 +570,6 @@ body {
     <button class="btn btn-media" onclick="k('KEYCODE_MEDIA_FAST_FORWARD')" title="Fast Forward">⏭</button>
   </div>
 
-  <div class="rule"></div>
-
-  <!-- Numpad -->
-  <div class="numpad">
-    <button class="btn btn-num" onclick="k('KEYCODE_1')">1</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_2')">2</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_3')">3</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_4')">4</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_5')">5</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_6')">6</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_7')">7</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_8')">8</button>
-    <button class="btn btn-num" onclick="k('KEYCODE_9')">9</button>
-    <button class="btn btn-num btn-zero" onclick="k('KEYCODE_0')">0</button>
-  </div>
-
-</div>
-
-<!-- Apps -->
-<div class="apps-section">
-  <div class="apps-header">
-    <span class="apps-title">Apps</span>
-    <div style="display:flex;gap:8px;align-items:center">
-    <button class="apps-copy-btn" id="appsCopyBtn" onclick="copyPackageList()" title="Copy package list to clipboard">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      Copy list
-    </button>
-    <button class="apps-load-btn" id="appsLoadBtn" onclick="loadApps()" disabled>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-4"/>
-      </svg>
-      Load Apps
-    </button>
-    </div>
-  </div>
-
-  <div class="apps-adb-note" id="appsAdbNote">
-    Requires <strong>ADB over network</strong> enabled on your TV (Developer Options → ADB debugging). Also needs <code>adb</code> installed:
-    <code>brew install android-platform-tools</code>
-  </div>
-
-  <div class="apps-state" id="appsLoading">
-    <div class="spinner"></div>
-    <span>Discovering apps via ADB…</span>
-  </div>
-
-  <div class="apps-error-msg" id="appsErrorMsg"></div>
-
-  <div class="apps-grid" id="appsGrid"></div>
 </div>
 
 <!-- Status Bar -->
@@ -872,23 +582,17 @@ body {
     <span class="sb-key">Power</span>
     <span class="sb-val" id="sbPwr">—</span>
   </div>
-  <div class="sb-item">
-    <span class="sb-key">Volume</span>
-    <span class="sb-val" id="sbVol">—</span>
-  </div>
 </div>
 
 <script type="module">
 import {
   appState, setIndicator, setHint, toast, setRemoteEnabled, updateSB,
-  handleConnect, onMsg, send, k, sendPower, sendPin,
-  esc, loadApps, copyPackageList, renderApps, init,
+  handleConnect, onMsg, send, k, sendPower, sendPin, init,
 } from './app.js';
 
 // Expose functions called by inline onclick attributes
 Object.assign(window, {
-  handleConnect, sendPower, sendPin, loadApps, copyPackageList,
-  k,
+  handleConnect, sendPower, sendPin, k,
 });
 
 init();

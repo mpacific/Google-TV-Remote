@@ -2,8 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   appState, setIndicator, setHint, toast, setRemoteEnabled, updateSB,
-  handleConnect, onMsg, send, k, sendPower, sendPin,
-  esc, loadApps, renderApps, init,
+  handleConnect, onMsg, send, k, sendPower, sendPin, init,
 } from '../public/app.js';
 
 // ── Minimal DOM required by app.js ────────────────────────────────────────
@@ -14,22 +13,11 @@ const DOM = `
   <div id="remote" class="remote off"></div>
   <div id="sbApp" class="sb-val">—</div>
   <div id="sbPwr" class="sb-val">—</div>
-  <div id="sbVol" class="sb-val">—</div>
   <input id="ipInput" value="" />
   <button id="connectBtn"></button>
   <div id="pinPanel" class="pin-panel"></div>
   <input id="pinInput" value="" />
   <button id="powerBtn" class="btn-power"></button>
-  <button id="muteBtn">🔔</button>
-  <button id="appsLoadBtn" disabled></button>
-  <button id="appsCopyBtn" class="apps-copy-btn">
-    <svg></svg>
-    Copy list
-  </button>
-  <div id="appsLoading" class="apps-state"></div>
-  <div id="appsErrorMsg" class="apps-error-msg"></div>
-  <div id="appsAdbNote" class="apps-adb-note"></div>
-  <div id="appsGrid"></div>
 `;
 
 // ── MockWebSocket ──────────────────────────────────────────────────────────
@@ -55,37 +43,12 @@ beforeEach(() => {
   // Reset appState between tests
   appState.ws = null;
   appState.powered = null;
-  appState.vol = null;
-  appState.muted = false;
   appState.app = null;
-  appState.installedApps = [];
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-});
-
-// ══ esc ═══════════════════════════════════════════════════════════════════
-describe('esc', () => {
-  it('escapes ampersands', () => {
-    expect(esc('a&b')).toBe('a&amp;b');
-  });
-  it('escapes less-than', () => {
-    expect(esc('<script>')).toBe('&lt;script&gt;');
-  });
-  it('escapes double quotes', () => {
-    expect(esc('"hello"')).toBe('&quot;hello&quot;');
-  });
-  it('leaves safe strings unchanged', () => {
-    expect(esc('Netflix')).toBe('Netflix');
-  });
-  it('coerces non-strings', () => {
-    expect(esc(42)).toBe('42');
-  });
-  it('escapes all four entities in one string', () => {
-    expect(esc('<a href="x&y">')).toBe('&lt;a href=&quot;x&amp;y&quot;&gt;');
-  });
 });
 
 // ══ setIndicator ══════════════════════════════════════════════════════════
@@ -201,23 +164,6 @@ describe('updateSB', () => {
     updateSB();
     expect(document.getElementById('sbPwr').textContent).toBe('—');
   });
-  it('shows volume level when not muted', () => {
-    appState.vol = 15;
-    appState.muted = false;
-    updateSB();
-    expect(document.getElementById('sbVol').textContent).toBe('15');
-  });
-  it('appends mute indicator when muted', () => {
-    appState.vol = 15;
-    appState.muted = true;
-    updateSB();
-    expect(document.getElementById('sbVol').textContent).toBe('15 ✕');
-  });
-  it('shows "—" for volume when vol is null', () => {
-    appState.vol = null;
-    updateSB();
-    expect(document.getElementById('sbVol').textContent).toBe('—');
-  });
 });
 
 // ══ send / k / sendPower ══════════════════════════════════════════════════
@@ -279,59 +225,6 @@ describe('sendPin', () => {
     document.getElementById('pinInput').value = '654321';
     sendPin();
     expect(document.getElementById('statusHint').textContent).toBe('Verifying PIN…');
-  });
-});
-
-// ══ loadApps ═══════════════════════════════════════════════════════════════
-describe('loadApps', () => {
-  it('sends a getApps message', () => {
-    const mockSend = vi.fn();
-    appState.ws = { readyState: MockWebSocket.OPEN, send: mockSend };
-    loadApps();
-    expect(JSON.parse(mockSend.mock.calls[0][0])).toEqual({ type: 'getApps' });
-  });
-});
-
-// ══ renderApps ═════════════════════════════════════════════════════════════
-describe('renderApps', () => {
-  it('shows "No apps found" for an empty list', () => {
-    renderApps([]);
-    expect(document.getElementById('appsGrid').textContent).toContain('No apps found');
-  });
-  it('renders one tile per app', () => {
-    renderApps([
-      { package: 'com.netflix.ninja', component: 'com.netflix.ninja/.MainActivity', name: 'Netflix', color: '#E50914' },
-      { package: 'com.plexapp.android', component: 'com.plexapp.android/.Main', name: 'Plex', color: '#E5A00D' },
-    ]);
-    expect(document.querySelectorAll('.app-tile').length).toBe(2);
-  });
-  it('sets data-component on each tile', () => {
-    renderApps([
-      { package: 'com.netflix.ninja', component: 'com.netflix.ninja/.MainActivity', name: 'Netflix', color: '#E50914' },
-    ]);
-    const tile = document.querySelector('.app-tile');
-    expect(tile.dataset.component).toBe('com.netflix.ninja/.MainActivity');
-  });
-  it('renders the first letter of the app name in the icon', () => {
-    renderApps([
-      { package: 'com.plexapp.android', component: 'com.plexapp.android/.Main', name: 'Plex', color: '#E5A00D' },
-    ]);
-    expect(document.querySelector('.app-icon').textContent.trim()).toBe('P');
-  });
-  it('renders the app name in the tile label', () => {
-    renderApps([
-      { package: 'com.plexapp.android', component: 'com.plexapp.android/.Main', name: 'Plex', color: '#E5A00D' },
-    ]);
-    expect(document.querySelector('.app-name').textContent.trim()).toBe('Plex');
-  });
-  it('HTML-escapes name, package, component, and color', () => {
-    renderApps([
-      { package: 'a&b', component: 'a&b/<Main>', name: '<Bad>', color: '#fff' },
-    ]);
-    const html = document.getElementById('appsGrid').innerHTML;
-    expect(html).not.toContain('<Bad>');
-    expect(html).toContain('&lt;Bad&gt;');
-    expect(html).toContain('a&amp;b');
   });
 });
 
@@ -432,10 +325,6 @@ describe('onMsg — ready', () => {
     onMsg({ type: 'ready' });
     expect(document.getElementById('pinPanel').classList.contains('show')).toBe(false);
   });
-  it('enables the Load Apps button', () => {
-    onMsg({ type: 'ready' });
-    expect(document.getElementById('appsLoadBtn').disabled).toBe(false);
-  });
 });
 
 describe('onMsg — powered', () => {
@@ -451,25 +340,6 @@ describe('onMsg — powered', () => {
   it('updates appState.powered', () => {
     onMsg({ type: 'powered', value: true });
     expect(appState.powered).toBe(true);
-  });
-});
-
-describe('onMsg — volume', () => {
-  it('reads level from value.level when present', () => {
-    onMsg({ type: 'volume', value: { level: 20, muted: false } });
-    expect(appState.vol).toBe(20);
-  });
-  it('reads value directly when no .level key', () => {
-    onMsg({ type: 'volume', value: 12 });
-    expect(appState.vol).toBe(12);
-  });
-  it('shows mute icon when muted=true', () => {
-    onMsg({ type: 'volume', value: { level: 5, muted: true } });
-    expect(document.getElementById('muteBtn').textContent).toBe('🔇');
-  });
-  it('shows bell icon when muted=false', () => {
-    onMsg({ type: 'volume', value: { level: 5, muted: false } });
-    expect(document.getElementById('muteBtn').textContent).toBe('🔔');
   });
 });
 
@@ -510,71 +380,6 @@ describe('onMsg — unpaired', () => {
   });
 });
 
-describe('onMsg — appsLoading', () => {
-  it('shows the loading spinner', () => {
-    onMsg({ type: 'appsLoading' });
-    expect(document.getElementById('appsLoading').classList.contains('show')).toBe(true);
-  });
-  it('hides the error message', () => {
-    document.getElementById('appsErrorMsg').classList.add('show');
-    onMsg({ type: 'appsLoading' });
-    expect(document.getElementById('appsErrorMsg').classList.contains('show')).toBe(false);
-  });
-  it('disables the Load Apps button', () => {
-    document.getElementById('appsLoadBtn').disabled = false;
-    onMsg({ type: 'appsLoading' });
-    expect(document.getElementById('appsLoadBtn').disabled).toBe(true);
-  });
-});
-
-describe('onMsg — apps', () => {
-  const LIST = [
-    { package: 'com.netflix.ninja', component: 'com.netflix.ninja/.Main', name: 'Netflix', color: '#E50914' },
-  ];
-  it('hides the loading spinner', () => {
-    document.getElementById('appsLoading').classList.add('show');
-    onMsg({ type: 'apps', list: LIST });
-    expect(document.getElementById('appsLoading').classList.contains('show')).toBe(false);
-  });
-  it('stores the list in appState.installedApps', () => {
-    onMsg({ type: 'apps', list: LIST });
-    expect(appState.installedApps).toEqual(LIST);
-  });
-  it('renders tiles into the grid', () => {
-    onMsg({ type: 'apps', list: LIST });
-    expect(document.querySelectorAll('.app-tile').length).toBe(1);
-  });
-  it('shows the copy button', () => {
-    onMsg({ type: 'apps', list: LIST });
-    expect(document.getElementById('appsCopyBtn').classList.contains('show')).toBe(true);
-  });
-  it('re-enables the Load Apps button', () => {
-    onMsg({ type: 'apps', list: LIST });
-    expect(document.getElementById('appsLoadBtn').disabled).toBe(false);
-  });
-});
-
-describe('onMsg — appsError', () => {
-  it('hides the loading spinner', () => {
-    document.getElementById('appsLoading').classList.add('show');
-    onMsg({ type: 'appsError', message: 'ADB refused' });
-    expect(document.getElementById('appsLoading').classList.contains('show')).toBe(false);
-  });
-  it('shows the ADB note', () => {
-    onMsg({ type: 'appsError', message: 'ADB refused' });
-    expect(document.getElementById('appsAdbNote').classList.contains('show')).toBe(true);
-  });
-  it('sets the error message text', () => {
-    onMsg({ type: 'appsError', message: 'ADB refused' });
-    expect(document.getElementById('appsErrorMsg').textContent).toBe('ADB refused');
-    expect(document.getElementById('appsErrorMsg').classList.contains('show')).toBe(true);
-  });
-  it('re-enables the Load Apps button', () => {
-    onMsg({ type: 'appsError', message: 'err' });
-    expect(document.getElementById('appsLoadBtn').disabled).toBe(false);
-  });
-});
-
 // ══ init — event wiring ════════════════════════════════════════════════════
 describe('init', () => {
   it('restores a saved IP from localStorage', () => {
@@ -606,19 +411,5 @@ describe('init', () => {
       new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
     );
     expect(JSON.parse(mockSend.mock.calls[0][0])).toMatchObject({ type: 'sendCode', code: '112233' });
-  });
-  it('sends launchApp when an app tile is clicked', () => {
-    const mockSend = vi.fn();
-    appState.ws = { readyState: MockWebSocket.OPEN, send: mockSend };
-    onMsg({
-      type: 'apps',
-      list: [{ package: 'com.netflix.ninja', component: 'com.netflix.ninja/.Main', name: 'Netflix', color: '#E50914' }],
-    });
-    init();
-    document.querySelector('.app-tile').click();
-    expect(JSON.parse(mockSend.mock.calls[0][0])).toEqual({
-      type: 'launchApp',
-      component: 'com.netflix.ninja/.Main',
-    });
   });
 });
