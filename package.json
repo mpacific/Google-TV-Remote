@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Web-based Google TV remote control",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",

@@ -19,7 +19,7 @@ Pairing is a one-time PIN exchange; the certificate is saved and reused afterwar
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) 18 or newer
+- [Node.js](https://nodejs.org/) 20.19 or newer (an `.nvmrc` pins Node 20 — run `nvm use` if you use nvm)
 - A Google TV / Android TV device on the same local network
 - The TV's IP address (Settings → Network → Status)
 
